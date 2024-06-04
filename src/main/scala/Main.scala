@@ -1,5 +1,24 @@
-@main def hello(): Unit =
-  println("Hello world!")
-  println(msg)
+import scala.annotation.tailrec
+import scala.io.Source
+import scala.io.StdIn.readLine
+import scala.util.Using
 
-def msg = "I was compiled by Scala 3. :)"
+@main def lox(args: String*): Unit =
+  if args.length > 1 then
+    println("Usage: jlox [script]")
+    System.exit(64)
+  else if args.length == 1 then runFile(args(0))
+  else runPrompt()
+
+def runFile(path: String): Unit =
+  run(Using(Source.fromFile(path))(_.mkString).get)
+
+@tailrec
+def runPrompt(): Unit =
+  val line = readLine("> ")
+  if line == null then return
+  run(line)
+  runPrompt()
+
+def run(source: String): Unit =
+  println(source)
