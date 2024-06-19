@@ -1,4 +1,5 @@
 import TokenType._
+
 class Scanner(source: String):
   private var tokens = List.empty[Token]
   private var start = 0
@@ -27,8 +28,43 @@ class Scanner(source: String):
       case '+' => addToken(PLUS)
       case ';' => addToken(SEMICOLON)
       case '*' => addToken(STAR)
-      case _ =>
-        Lox.error(line, "Unexpected character.")
+      case '!' => addToken(if next('=') then BANG_EQUAL else BANG)
+      case '=' => addToken(if next('=') then EQUAL_EQUAL else EQUAL)
+      case '<' => addToken(if next('=') then LESS_EQUAL else LESS)
+      case '>' => addToken(if next('=') then GREATER_EQUAL else GREATER)
+      case '/' =>
+        if next('/') then while peek() != '\n' && !isAtEnd do advance()
+        else addToken(SLASH)
+
+      case ' ' | '\r' | '\t' => ()
+      case '\n'              => line += 1
+
+      case '"' => string()
+
+      case _ => Lox.error(line, "Unexpected character.")
+
+  private def string(): Unit =
+    while (peek() != '"') && !isAtEnd do
+      if (peek() eq '\n') line += 1
+      advance()
+    if (isAtEnd)
+      Lox.error(line, "Unterminated string.")
+      return
+
+    advance()
+
+    val value = source.substring(start + 1, current - 1)
+    addToken(STRING, value)
+
+  private def next(expected: Char): Boolean =
+    if isAtEnd then return false
+    if source(current) != expected then return false
+    current += 1
+    true
+
+  private def peek(): Char =
+    if isAtEnd then '\u0000'
+    else source(current)
 
   private def advance(): Char =
     val previous = source(current)

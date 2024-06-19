@@ -17,7 +17,7 @@ object Lox:
 
   private def runFile(path: String): Unit =
     run(Using(Source.fromFile(path))(_.mkString).get)
-    if (hadError) sys.exit(65)
+    if hadError then sys.exit(65)
 
   @tailrec
   private def runPrompt(): Unit =
